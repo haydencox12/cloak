@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>websocket-sharp.clone</id>
+    <version>2.0.0</version>
+    <title>WebSocket#</title>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <authors>Jacob Reimers</authors>
+    <owners>Jacob Reimers</owners>
+    <projectUrl>https://github.com/jjrdk/websocket-sharp</projectUrl>
+    <description>WebSocket# provides the WebSocket protocol client and server.
+
+It supports:
+- WebSocket Client and Server
+- RFC 6455
+- Per-message Compression extension
+- Secure Connection
+- HTTP Authentication
+- Query String, Origin header and Cookies
+- Infinite streaming
+- .NET 4.5 or later</description>
+    <summary>This is a clone of websocket-sharp which is updated to use .NET 4.5 in order to make use of task based asynchronicity.</summary>
+    <tags>websocket</tags>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5" />
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="mscorlib" targetFramework=".NETFramework4.5" />
+      <frameworkAssembly assemblyName="System" targetFramework=".NETFramework4.5" />
+      <frameworkAssembly assemblyName="System.Core" targetFramework=".NETFramework4.5" />
+      <frameworkAssembly assemblyName="Microsoft.CSharp" targetFramework=".NETFramework4.5" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

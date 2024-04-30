@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>Game Lobby</title>
+    <script type="text/javascript" src="https://www.airconsole.com/api/airconsole-1.8.0.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #name-input, #start-button {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px 10%;
+            box-sizing: border-box;
+        }
+
+        #interact-button {
+            background-image: url("button.png");
+            position: absolute;
+            top: 60%;
+            left: 10%;
+            width: 80%;
+            height: 20%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            cursor: pointer;
+        }
+
+        #role-info {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <input type="text" id="name-input" placeholder="Enter your name" />
+    <button id="start-button" ontouchstart="app.startGame()">Start Game</button>
+    <div id="role-info"></div>
+
+    <script type="text/javascript">
+        function App() {
+            this.airconsole = new AirConsole();
+            this.init();
+}
+
+App.prototype.init = function() {
+    this.airconsole.onMessage = (from, data) => {
+        if (data.action === "roleAssigned") {
+            document.getElementById('role-info').innerText = "Your role is: " + data.role;
+            console.log("Role received: " + data.role);
+        }
+    };
+
+    // Ensure input handler setup and any other initializations are done here
+    this.setupInputHandlers();
+};
+
+// Ensure the document is fully loaded before initializing the App
+document.addEventListener("DOMContentLoaded", function() {
+    var app = new App();
+});
+
+        App.prototype.startGame = function() {
+            this.sendMessageToScreen({action: 'startGame'});
+        };
+
+        App.prototype.sendMessageToScreen = function(msg) {
+            this.airconsole.message(AirConsole.SCREEN, msg);
+        };
+
+        App.prototype.init = function() {
+            this.airconsole.onMessage = (from, data) => {
+                if (data.action === "roleAssigned") {
+                    document.getElementById('role-info').innerText = "Your role is: " + data.role;
+                }
+            };
+        };
+
+        var app = new App();
+        app.init();
+    </script>
+</body>
+</html>

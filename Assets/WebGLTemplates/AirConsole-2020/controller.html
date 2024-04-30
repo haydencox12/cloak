@@ -1,0 +1,228 @@
+
+<html>
+<head>
+  <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <script type="text/javascript" src="https://www.airconsole.com/api/airconsole-1.7.0.js"></script>
+  <style type=text/css>
+  /* the style sheet dictates what our elements (buttons, backgrounds etc.) will look like. */
+  #input {
+      /*display: none;*/
+  }
+  #send {
+      /*display: none;*/
+  }
+  #takeControl {
+      display: none;
+  }
+
+  #game-mode-container button {
+          margin: 10px;
+          padding: 10px;
+          font-size: 16px;
+      }
+
+  #message {
+        display: none;
+        font-size: 20px;
+        color: red;
+      }
+
+  </style>
+  
+  <script type="text/javascript">
+
+  var airconsole;
+
+    function App() {
+
+    /* JavaScript / Functionality. Add functions and evens here */ 
+
+      airconsole = new AirConsole({"orientation": "portrait"});
+
+        airconsole.onMessage = function (device_id, data) {
+            if (data.action) {
+                switch (data.action) {
+                    case "assignRole":
+                        document.getElementById('roleDisplay').innerText = "Your Role: " + data.role;
+                        document.getElementById('roleDisplay').style.display = 'block';
+                        break;
+                    case "Reset":
+                        document.getElementById('roleDisplay').style.display = 'none';
+                        // handle other actions as previously
+                        break;
+                    case "chooseGameMode":
+                        // Show UI elements for choosing the game mode
+                        displayGameModeChoices();
+                        break;
+                    case "wait":
+                        // Show a waiting message
+                        displayWaitMessage("Please wait for the game mode selection...");
+                        break;
+                    case "hideGameModeSelection":
+                        hideGameModeSelection();  // Hide the game mode selection interface
+                        break;
+                    case "startVoting":
+                        // Assume data includes list of players and the ID of the current player
+                        displayVotingOptions();
+                        break;
+                    case "hideVoting":
+                        hideVotingOptions();
+                        break;
+                }
+            }
+
+            document.getElementById('takeControl').style.display = 'none';
+            if(data == "TakenControl")
+            {
+                document.getElementById('send').style.display = 'inline';
+			}
+            // Removes the voting buttons and shows the send button again
+            if(data == "Reset")
+            {
+                document.getElementById('send').style.display = 'inline';
+                /*(document.getElementById('takeControl').style.display = 'inline';*/
+                document.getElementById('parentNode').remove();
+			}
+            // Removes the send button after sending a message
+            if(data == "Sent")
+            {
+                document.getElementById('send').style.display = 'none';
+			}
+            // Removes the voting buttons after voting
+            if(data == "Voted")
+            {
+                document.getElementById('parentNode').remove();
+			}
+            // Adds a paragragh tag for the voting buttons to append to
+            if(data == "SetupRound")
+            {
+                var parentNode = document.createElement("p");
+                parentNode.id = "parentNode";
+                var body = document.getElementsByTagName("body")[0];
+                body.appendChild(parentNode);
+			}
+            // Adds a voting button if the message isn't recognized
+            if(data != "Reset" && data != "TakenControl" && data != "Sent" && data != "ControlTaken" && data != "SetupRound" && data != "Voted")
+            {
+                // 1. Create the button
+                var button = document.createElement("button");
+                button.id = data;
+                button.innerHTML = data;
+                button.parentNode = document.getElementById("parentNode");
+
+                // 2. Append somewhere
+                var parentNode = document.getElementById("parentNode");
+                parentNode.appendChild(button);
+
+                // 3. Add event handler
+                button.addEventListener ("click", function() {
+                  airconsole.message(AirConsole.SCREEN, {"vote": data});
+                });
+			}
+        };
+      /*
+       * Here we are adding support for mouse events manually.
+       * --> WE STRONGLY ENCOURAGE YOU TO USE THE AIRCONSOLE CONTROLS LIBRARY
+       * WHICH IS EVEN BETTER (BUT WE DONT WANT TO BLOAT THE CODE HERE).
+       * https://github.com/AirConsole/airconsole-controls/
+       * 
+       * DO NOT USE ONCLICK HANDLERS.
+       * THEY ADD A 200MS DELAY!
+       */
+      if (!("ontouchstart" in document.createElement("div"))) {
+        var elements = document.getElementsByTagName("*");
+        for (var i = 0; i < elements.length; ++i) {
+          var element = elements[i];
+          var ontouchstart = element.getAttribute("ontouchstart");
+          if (ontouchstart) {
+            element.setAttribute("onmousedown", ontouchstart);
+          }
+          var ontouchend = element.getAttribute("ontouchend");
+          if (ontouchend) {
+            element.setAttribute("onmouseup", ontouchend);
+          }
+        }
+      }
+    }
+
+    App.prototype.sendInputToScreen = function() {
+    if(document.getElementById("input").value != ""){
+     airconsole.message(AirConsole.SCREEN, {"input": document.getElementById("input").value});
+     }
+	}
+
+    App.prototype.sendMessageToScreen = function(msg) {
+     airconsole.message(AirConsole.SCREEN, {"action": msg});
+	}
+
+    App.prototype.onFromDevice = function(device_id, data) {
+    airconsole.message(AirConsole.SCREEN, {"action": data});
+      };
+
+      function displayGameModeChoices() {
+          // Show buttons or options for game mode selection
+          var gameModes = ['Truth and Lies', 'Find the Leader', 'Silent Assassin', 'Last Stand'];
+          var container = document.getElementById('game-mode-container');
+          container.innerHTML = ''; // Clear previous contents
+          gameModes.forEach(function (mode, index) {
+              var button = document.createElement('button');
+              button.textContent = mode;
+              button.onclick = function () {
+                  airconsole.message(AirConsole.SCREEN, { action: "gameModeSelected", mode: index });
+              };
+              container.appendChild(button);
+          });
+          container.style.display = 'block'; // Make the container visible
+      }
+
+      function displayWaitMessage(message) {
+          // Display a waiting message while other player chooses the game mode
+          var messageDiv = document.getElementById('message');
+          messageDiv.textContent = message;
+          messageDiv.style.display = 'block'; // Make the message visible
+          document.getElementById('game-mode-container').style.display = 'none'; // Hide game mode choices
+      }
+
+      function hideGameModeSelection() {
+          var container = document.getElementById('game-mode-container');
+          container.style.display = 'none';  // Hide the game mode selection container
+          var messageDiv = document.getElementById('message');
+          messageDiv.style.display = 'none';  // Optionally hide the message as well
+      }
+
+      function displayVotingOptions(players, currentPlayerId) {
+          var votingContainer = document.getElementById('voting-container');
+          votingContainer.innerHTML = ''; // Clear previous voting options
+          players.forEach(function (player) {
+              if (player.id !== currentPlayerId) {
+                  var voteButton = document.createElement('button');
+                  voteButton.textContent = 'Vote for ' + player.name;
+                  voteButton.onclick = function () {
+                      airconsole.message(AirConsole.SCREEN, { action: "vote", votedPlayerId: player.id });
+                      hideVotingOptions(); // Hide voting options after making a selection
+                  };
+                  votingContainer.appendChild(voteButton);
+              }
+          });
+
+          votingContainer.style.display = 'block'; // Show the voting options
+      }
+
+      function hideVotingOptions() {
+          var votingContainer = document.getElementById('voting-container');
+          votingContainer.style.display = 'none';
+      }
+
+  </script>
+</head>
+<body onload="window.app = new App()">
+    <!-- Add your HTML elements here -->
+
+
+    <div id="roleDisplay" style="display:none;"></div>
+    <div id="game-mode-container" style="display: none;"></div>
+    <div id="message" style="display: none;"></div>
+    <div id="voting-container" style="display: none;"></div>
+
+</body>
+</html>
